@@ -1,14 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Canvas, useLoader } from '@react-three/fiber';
-import { TextureLoader, Vector3, Euler, Mesh, MeshStandardMaterial, Color } from 'three';
+import { WebGLRenderer, TextureLoader, Vector3, Euler, Mesh, MeshStandardMaterial, Color, PCFSoftShadowMap } from 'three';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import { THREE } from 'aframe';
 import img from "./img.png";
 import "./App.css"
 
 const MapCanvas: React.FC = () => {
-    const { nodes } = useGLTF('/floormap.glb');
-    const customMesh = nodes.CustomObject as Mesh;
+    const renderer = new WebGLRenderer();
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = PCFSoftShadowMap;
+
+    function CreateMesh(file: string) {
+        const { nodes } = useGLTF(file);
+        return nodes;
+    }
+    const M2b5685 = CreateMesh('/floormap.glb').CustomObject as Mesh;
+    const Mstairs = CreateMesh('/stairs.glb').CustomObject as Mesh;
+
     const meshRef = useRef<THREE.Mesh>(null);
     const texture = useLoader(TextureLoader, img);
     const aspectRatio = 5000 / 3400;
@@ -19,7 +28,7 @@ const MapCanvas: React.FC = () => {
     const [rotation] = useState(new Euler(-Math.PI / 2, 0, 0));  // Face up by default
 
     const customMaterial = new MeshStandardMaterial({
-        color: new Color(0xe9d3b7) // Using numeric format
+        color: new Color(0x2b5685), // Using numeric format
     });
 
     const handlePointerDown = (event: { stopPropagation: () => void; }) => {
@@ -54,13 +63,14 @@ const MapCanvas: React.FC = () => {
                 <meshBasicMaterial map={texture} />
             </mesh>
             <mesh
-                castShadow
-                receiveShadow
-                geometry={customMesh.geometry}
+                castShadow={true}
+                receiveShadow={true}
+                geometry={M2b5685.geometry}
                 material={customMaterial}
                 position={[(position.x - 49.99), 0, (position.z + 34)]}
                 scale={0.4}
             />
+
         </>
         
     );
@@ -70,9 +80,13 @@ const App: React.FC = () => {
     return (
         <div className='map-container'>
             <Canvas camera={{ fov: 75, position: new Vector3(0, 5, 5) }} style={{ height: '100vh', width: '100vw' }}>
-                <ambientLight intensity={3} />
-                <pointLight position={new Vector3(10, 10, 10)} />
-                <OrbitControls enableRotate={false} enableZoom={false} enablePan={false} />
+                {/* <ambientLight intensity={3} /> */}
+                <directionalLight position={new Vector3(0, 5, 0)} castShadow={true} intensity={1}/>
+                <directionalLight position={new Vector3(-5, 0, 0)} castShadow={true} intensity={0.5}/>
+                <directionalLight position={new Vector3(0, 0, 5)} castShadow={true} intensity={0.25}/>
+                <directionalLight position={new Vector3(0, 0, -5)} castShadow={true} intensity={0.15}/>
+                <directionalLight position={new Vector3(5, 0, 0)} castShadow={true} intensity={0.15}/>
+                <OrbitControls enableRotate={false} enableZoom={false} enablePan={false}/>
                 <MapCanvas />
             </Canvas>
         </div>
