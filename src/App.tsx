@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Canvas, useLoader } from '@react-three/fiber';
 import { WebGLRenderer, TextureLoader, Vector3, Euler, Mesh, MeshStandardMaterial, Color, PCFSoftShadowMap } from 'three';
 import { OrbitControls, useGLTF } from '@react-three/drei';
@@ -9,6 +9,7 @@ import Stairs from './Stairs';
 import Borders from './Borders';
 import Rooms from './Rooms';
 import RoomOutlines from './RoomOutlines';
+import GraphMesh from './dataGraph';
 
 const MapCanvas: React.FC = () => {
     const renderer = new WebGLRenderer();
@@ -76,6 +77,7 @@ const MapCanvas: React.FC = () => {
                 <RoomOutlines position={position}/>
             </>
             <Stairs position={position}/>
+            <GraphMesh position={position}/>
         </>
         
     );
@@ -84,7 +86,7 @@ const MapCanvas: React.FC = () => {
 const App: React.FC = () => {
     return (
         <div className='map-container'>
-            <Canvas camera={{ fov: 75, position: new Vector3(0, 5, 5) }} style={{ height: '100vh', width: '100vw' }}>
+            <Canvas camera={{ fov: 75, position: new Vector3(0, 5, 5), near: 1, far: 1000 }} style={{ height: '100vh', width: '100vw' }}>
                 <directionalLight position={new Vector3(0, 5, 0)} castShadow={true} intensity={1}/>
                 <directionalLight position={new Vector3(-5, 0, 0)} castShadow={true} intensity={0.5}/>
                 <directionalLight position={new Vector3(0, 0, 5)} castShadow={true} intensity={0.25}/>
