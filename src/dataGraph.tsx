@@ -74,7 +74,7 @@ const GraphMesh: React.FC<{ position: Vector3 }> = ({ position }) => {
             case "INFO":
                 return { mesh: <coneGeometry args={[0.5, 1, 3]} />, color: "#1fe18a" };
             case "LABS":
-                return { mesh: <octahedronGeometry args={[0.5, 0]} />, color: "#9608da" };
+                return { mesh: <octahedronGeometry args={[1, 0]} />, color: "#9608da" };
             case "REST":
                 return { mesh: <boxGeometry args={[1, 1, 1]} />, color: "#5cdbda" }; // Parallelogram shape not directly available, using box for example
             case "BATH":
@@ -98,12 +98,13 @@ const GraphMesh: React.FC<{ position: Vector3 }> = ({ position }) => {
                     <mesh
                         key={index}
                         position={[
-                            ((position.x - 50) + (node.coords.x / 50)), 0, ((position.z - 34) + (node.coords.y / 50))
+                            ((position.x - 50) + (node.coords.x / 50)), 0.1, ((position.z - 34) + (node.coords.y / 50))
                         ]}
                         rotation={[0, 0, 0]}
-                        scale={hoveredNode === node.id ? [0.5, 0.5, 0.5] : [0.25, 0.25, 0.25]}
+                        scale={hoveredNode === node.id ? [0.25, 0.25, 0.25] : [0.15, 0.15, 0.15]}
                         onPointerOver={() => setHoveredNode(node.id)}
                         onPointerOut={() => setHoveredNode(null)}
+                        onClick={() => console.log(node.longName)}
                     >
                         {mesh}
                         <meshBasicMaterial color={color} />

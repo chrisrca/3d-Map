@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Canvas, useLoader } from '@react-three/fiber';
-import { WebGLRenderer, TextureLoader, Vector3, Euler, Mesh, MeshStandardMaterial, Color, PCFSoftShadowMap } from 'three';
-import { OrbitControls, useGLTF } from '@react-three/drei';
+import { WebGLRenderer, TextureLoader, Vector3, Euler, PCFSoftShadowMap } from 'three';
+import { OrbitControls } from '@react-three/drei';
 import { THREE } from 'aframe';
 import img from "./img.png";
 import "./App.css"
@@ -10,14 +10,14 @@ import Borders from './Borders';
 import Rooms from './Rooms';
 import RoomOutlines from './RoomOutlines';
 import GraphMesh from './dataGraph';
+import Elevator from './Elevator';
+// import { TextGeometry } from 'three-stdlib';
+import Building from './Building';
 
 const MapCanvas: React.FC = () => {
     const renderer = new WebGLRenderer();
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = PCFSoftShadowMap;
-
-    const { nodes } = useGLTF('/floormap.glb');
-    const floormap = nodes.CustomObject as Mesh;
 
     const meshRef = useRef<THREE.Mesh>(null);
     const texture = useLoader(TextureLoader, img);
@@ -28,10 +28,6 @@ const MapCanvas: React.FC = () => {
     const [position, setPosition] = useState(new Vector3(0, 0, 0));
     const [rotation] = useState(new Euler(-Math.PI / 2, 0, 0));
 
-    const customMaterial = new MeshStandardMaterial({
-        color: new Color(0x2b5685),
-    });
-
     const handlePointerDown = (event: { stopPropagation: () => void; }) => {
         setIsDragging(true);
         event.stopPropagation(); 
@@ -41,7 +37,19 @@ const MapCanvas: React.FC = () => {
         if (isDragging && meshRef.current) {
             const deltaX = event.movementX;
             const deltaZ = -event.movementY;
-            setPosition(prev => new Vector3(prev.x + deltaX * 0.013, prev.y, prev.z - deltaZ * 0.013));
+            
+            if ((position.x + deltaX * 0.013 > 28) || (position.x + deltaX * 0.013 < -40)) {
+                if ((position.z - deltaZ * 0.013 < -28) || (position.z - deltaZ * 0.013 > 25)) {
+                    setPosition(prev => new Vector3(prev.x, prev.y, prev.z));
+                } else {
+                    setPosition(prev => new Vector3(prev.x, prev.y, prev.z - deltaZ * 0.013));
+                }
+            } else if ((position.z - deltaZ * 0.013 < -28) || (position.z - deltaZ * 0.013 > 25)) {
+                setPosition(prev => new Vector3(prev.x + deltaX * 0.013, prev.y, prev.z));
+            } else {
+                setPosition(prev => new Vector3(prev.x + deltaX * 0.013, prev.y, prev.z - deltaZ * 0.013));
+            }
+            
         }
         event.stopPropagation();
     };
@@ -59,27 +67,30 @@ const MapCanvas: React.FC = () => {
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
+                onPointerOut={handlePointerUp}
             >
                 <planeGeometry args={[width, height]} />
                 <meshBasicMaterial map={texture} />
             </mesh>
-            <mesh
-                castShadow={true}
-                receiveShadow={true}
-                geometry={floormap.geometry}
-                material={customMaterial}
-                position={[(position.x - 49.99), 0, (position.z + 34)]}
-                scale={0.4}
-            />
             <>
+                <Building position={position}/>
                 <Rooms position={position}/>
                 <Borders position={position}/>
                 <RoomOutlines position={position}/>
+                <Stairs position={position}/>
+                <Elevator position={position}/>
+                <GraphMesh position={position}/>
             </>
-            <Stairs position={position}/>
-            <GraphMesh position={position}/>
+            {/* <Text
+                position={[(position.x), 1, (position.z)]}
+                color="white" // Default color
+                anchorX="center" // Center the text horizontally
+                anchorY="middle" // Center the text vertically
+                fontSize={2}
+            >
+                Test
+            </Text> */}
         </>
-        
     );
 };
 
